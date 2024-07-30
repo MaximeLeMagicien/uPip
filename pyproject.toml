@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 authors = [
-  { name = "Maxime CORDELLA" email = "maxime.cordella.1@ulaval.ca" },
+  { name = "Maxime CORDELLA", email = "maxime.cordella.1@ulaval.ca" }
 ]
 keywords = [
   "Universal2",
@@ -26,12 +26,16 @@ classifiers = [
 dependencies = [
   "requests",
   "regex",
-  "delocate"
+  "delocate",
+  "asyncio"
 ]
 
 [project.scripts]
-upip = "cli:processInput"
+upip = "uPip.cli:processInput"
 
+[project.urls]
+Homepage = "https://github.com/MaximeLeMagicien/uPip"
+Issues = "https://github.com/MaximeLeMagicien/uPip/issues"
 
 [build-system]
 requires = ["hatchling"]

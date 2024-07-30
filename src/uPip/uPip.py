@@ -12,6 +12,8 @@ class PkgManager():
         self.extras : list[str] = []
         self.closest : bool = None
         self.distributions : list[dict] = []
+        if not os.path.exists("wheels"):
+            os.mkdir("wheels")
         [baseName, extras] = self.processPackageName(packageName)
         if self.checkExistingPackage(baseName):
             self.packageName : str = baseName
@@ -56,7 +58,7 @@ class PkgManager():
             raise Exception(f"Release {release} does not exists for package {self.packageName}")
         distributions : list[str] = []
         for distribution in releases:
-            if distribution["filename"].find(release) and distribution["filename"].find(f"cp{self.targetPyVersion}") != -1:
+            if distribution["filename"].find(release) != -1 and distribution["filename"].find(f"cp{self.targetPyVersion}") != -1:
                 distributions.append(distribution)
 
         if len(distributions) == 0:
@@ -116,7 +118,8 @@ class PkgManager():
         elif code == 1:
             print("Any wheel found. Installing...")
         if self.checkLocalUniversal2Wheel(release) == False:
-            installedDist = self.create_universal2_wheel(code)
+            [installedDist, uWheelName] = self.create_universal2_wheel(code)
+            print(uWheelName)
         else:
             print("Found Universal2 wheel in local cache.")
             uWheelName = self.checkLocalUniversal2Wheel(release)
@@ -146,30 +149,29 @@ class PkgManager():
                 print(f"Error installing any wheel: {e.output}")
         return
 
-    def create_universal2_wheel(self, code : int):
-        distributions = self.distributions
+    def create_universal2_wheel(self, code : int, dest: str = "wheels"):
         installedDist : list[str] = []
-        for distribution in distributions:
+        uWheelName : str = None
+        for distribution in self.distributions:
             if self.closest:
                 pass
-            elif distribution["filename"].find(f"cp{str(self.targetPyVersion)}") != -1:
-                continue
+            elif distribution["filename"].find(f"cp{str(self.targetPyVersion)}") and distribution['filename'].find("macosx") != -1:
+                print(f"Downloading {distribution['filename']}...")
+                URL : str = distribution["url"]
+                if dest == "wheels":
+                    if not os.path.exists("wheels"):
+                        os.mkdir("wheels")
+                dReq = requests.get(URL, stream=True)
+                with open(f"{dest}/{distribution['filename']}", "wb") as file:
+                    for chunk in dReq.iter_content(chunk_size=1024):
+                        file.write(chunk)
+                    file.close()
+                installedDist.append(f"{dest}/{distribution['filename']}")
             else:
                 pass
-            print(f"Downloading {distribution['filename']}...")
-            URL : str = distribution["url"]
-            if not os.path.exists("wheels"):
-                os.mkdir("wheels")
-            dReq = requests.get(URL, stream=True)
-            with open(f"wheels/{distribution['filename']}", "wb") as file:
-                for chunk in dReq.iter_content(chunk_size=1024):
-                    file.write(chunk)
-                file.close()
-            installedDist.append(f"wheels/{distribution['filename']}")
-            uWheelName = "wheels/"+distribution['filename']
-        if code == 0:
+            
+        if code == 10:
             print("Creating universal2 wheel...")
-            uWheelName : str = None
             if installedDist[0].find("x86_64") != -1:
                 uWheelName = installedDist[1].replace("arm64", "universal2")
                 fuse_wheels(installedDist[0], installedDist[1], uWheelName)
@@ -177,7 +179,7 @@ class PkgManager():
                 uWheelName = installedDist[0].replace("arm64", "universal2")
                 fuse_wheels(installedDist[1], installedDist[0], uWheelName)
             print("Universal2 wheel created.")
-        return installedDist
+        return installedDist, uWheelName
 
     async def installRemainingDependencies(self):
         pkg = subprocess.check_output([sys.executable, "-m", "pip", "show", self.packageName], text=True)
