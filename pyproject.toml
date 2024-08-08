@@ -1,6 +1,6 @@
 [project]
-name = "uPip"
-version = "0.1.0"
+name = "universalPip"
+version = "0.1.1"
 description = "Creates an Universal2 distribution for given package on PyPI and installs it."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -13,7 +13,7 @@ keywords = [
   "macOSX",
   "pyinstaller",
   "arm64",
-  "x66_64"
+  "x86_64"
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -31,11 +31,13 @@ dependencies = [
 ]
 
 [project.scripts]
-upip = "uPip.cli:processInput"
+uPip = "uPip.cli:processInput"
 
 [project.urls]
 Homepage = "https://github.com/MaximeLeMagicien/uPip"
 Issues = "https://github.com/MaximeLeMagicien/uPip/issues"
+Changelog = "https://github.com/MaximeLeMagicien/uPip/blob/main/Changelog.md"
+
 
 [build-system]
 requires = ["hatchling"]

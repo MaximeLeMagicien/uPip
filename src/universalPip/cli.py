@@ -1,4 +1,4 @@
-from .uPip import PkgManager
+from .universalPip import PkgManager
 from argparse import ArgumentParser
 from subprocess import check_call
 import sys
